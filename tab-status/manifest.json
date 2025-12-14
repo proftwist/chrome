@@ -1,0 +1,21 @@
+{
+    "manifest_version": 3,
+    "name": "Статус Вкладки",
+    "version": "1.1",
+    "description": "Устанавливает статус (эмодзи) для текущей вкладки.",
+    "permissions": [
+      "contextMenus",
+      "scripting"
+    ],
+    "host_permissions": [
+      "<all_urls>"
+    ],
+    "background": {
+      "service_worker": "background.js"
+    },
+    "icons": {
+      "16": "icon.png",
+      "48": "icon.png",
+      "128": "icon.png"
+    }
+  }
