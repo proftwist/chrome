@@ -1,0 +1,24 @@
+{
+  "manifest_version": 3,
+  "name": "Красная паста",
+  "version": "1.0",
+  "description": "Зачеркивает текст и добавляет комментарий.",
+  "permissions": [
+    "contextMenus",
+    "activeTab"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"]
+    }
+  ],
+  "icons": {
+    "16": "icon.png",
+    "48": "icon.png",
+    "128": "icon.png"
+  }
+}
