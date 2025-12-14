@@ -1,6 +1,69 @@
 // Инициализация при загрузке страницы
-document.addEventListener('DOMContentLoaded', restoreCorrections);
-window.addEventListener('load', restoreCorrections);
+document.addEventListener('DOMContentLoaded', () => {
+  initializeRedPen();
+});
+window.addEventListener('load', () => {
+  initializeRedPen();
+});
+
+// Инициализация расширения
+function initializeRedPen() {
+  setupURLChangeListener();
+  setupMutationObserver();
+  // Небольшая задержка для загрузки динамического контента
+  setTimeout(restoreCorrections, 1000);
+}
+
+// Настройка отслеживания изменений URL (для SPA типа ВКонтакте)
+function setupURLChangeListener() {
+  // Отслеживаем изменения через History API
+  const pushState = history.pushState;
+  const replaceState = history.replaceState;
+
+  history.pushState = function(...args) {
+    pushState.apply(history, args);
+    setTimeout(restoreCorrections, 500);
+  };
+
+  history.replaceState = function(...args) {
+    replaceState.apply(history, args);
+    setTimeout(restoreCorrections, 500);
+  };
+
+  // Слушаем событие изменения URL через popstate
+  window.addEventListener('popstate', () => {
+    setTimeout(restoreCorrections, 500);
+  });
+}
+
+// Настройка наблюдателя за изменениями DOM
+function setupMutationObserver() {
+  const observer = new MutationObserver((mutations) => {
+    let shouldRestore = false;
+
+    mutations.forEach((mutation) => {
+      // Проверяем, добавились ли новые текстовые узлы или элементы
+      if (mutation.type === 'childList') {
+        mutation.addedNodes.forEach((node) => {
+          if (node.nodeType === Node.ELEMENT_NODE || node.nodeType === Node.TEXT_NODE) {
+            shouldRestore = true;
+          }
+        });
+      }
+    });
+
+    // Восстанавливаем правки с задержкой для загрузки всего контента
+    if (shouldRestore) {
+      setTimeout(restoreCorrections, 800);
+    }
+  });
+
+  // Наблюдаем за всем документом
+  observer.observe(document.body, {
+    childList: true,
+    subtree: true
+  });
+}
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === "markSelection") {
@@ -92,6 +155,11 @@ function getStoredCorrections() {
 async function restoreCorrections() {
   console.log('Восстановление правок...');
 
+  // Дополнительная задержка для ВКонтакте
+  if (window.location.hostname.includes('vk.com')) {
+    await new Promise(resolve => setTimeout(resolve, 1200));
+  }
+
   const corrections = await getStoredCorrections();
   const currentUrl = window.location.href;
 
@@ -110,22 +178,38 @@ async function restoreCorrections() {
 }
 
 function findAndMarkText(text, id, comment) {
-  // Создаем временный элемент для поиска текста
+  // Улучшенный поиск для ВКонтакте и других SPA
   const walker = document.createTreeWalker(
     document.body,
     NodeFilter.SHOW_TEXT,
-    null,
+    {
+      acceptNode: (node) => {
+        // Игнорируем пустые узлы и узлы в скриптах
+        if (!node.textContent.trim() ||
+            node.parentElement?.tagName === 'SCRIPT' ||
+            node.parentElement?.tagName === 'STYLE') {
+          return NodeFilter.FILTER_REJECT;
+        }
+        return NodeFilter.FILTER_ACCEPT;
+      }
+    },
     false
   );
 
   let node;
   while (node = walker.nextNode()) {
-    const nodeText = node.textContent;
-    const textIndex = nodeText.indexOf(text);
+    const nodeText = node.textContent.trim();
+    const textIndex = nodeText.indexOf(text.trim());
 
     if (textIndex !== -1) {
       const parent = node.parentNode;
       if (parent && parent.nodeType === Node.ELEMENT_NODE) {
+        // Проверяем, не был ли текст уже обработан
+        const existingMark = parent.querySelector(`[data-redpen-id="${id}"]`);
+        if (existingMark) {
+          continue; // Пропускаем, если уже обработано
+        }
+
         // Создаем span для правки
         const span = document.createElement("span");
         span.style.textDecoration = "line-through";
