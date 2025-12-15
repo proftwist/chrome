@@ -1,0 +1,19 @@
+@startuml 
+!include <C4/C4_Context>
+
+Title Контекстная диаграмма - Расширение "Статус Вкладки"
+
+Person(user, "Пользователь", "Добавляет эмодзи-статусы к вкладкам для организации работы")
+
+System(tab_status, "Статус Вкладки", "Chrome расширение для добавления эмодзи в заголовок и иконку вкладки")
+
+System_Ext(chrome, "Браузер Chrome", "Платформа для запуска расширений, предоставляет API вкладок и контекстное меню")
+System_Ext(tab_api, "Chrome Tabs API", "API для управления вкладками и их свойствами")
+
+Rel(user, tab_status, "Устанавливает статус через контекстное меню", "Правая кнопка мыши")
+Rel(tab_status, chrome, "Работает внутри", "Manifest V3, Chrome Extensions API")
+Rel(tab_status, tab_api, "Изменяет заголовок и иконку вкладки", "chrome.tabs API")
+
+SHOW_LEGEND()
+
+@enduml

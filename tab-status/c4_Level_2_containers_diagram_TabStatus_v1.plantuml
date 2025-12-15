@@ -1,0 +1,25 @@
+@startuml
+!include <C4/C4_Container>
+
+Title Диаграмма контейнеров - Расширение "Статус Вкладки"
+
+Person(user, "Пользователь", "Добавляет эмодзи-статусы через контекстное меню")
+
+System_Boundary(tab_status_system, "Статус Вкладки") {
+    Container(background, "Service Worker", "JavaScript", "Создает контекстное меню, обрабатывает клики")
+    ContainerDb(state, "Состояние вкладок", "chrome.storage", "Запоминает статусы для каждой вкладки")
+}
+
+System_Ext(chrome_browser, "Браузер Chrome", "Предоставляет API вкладок и контекстного меню")
+System_Ext(tab, "Вкладка Chrome", "GUI", "Визуальное представление вкладки с заголовком и иконкой")
+
+Rel(user, chrome_browser, "Работает в", "GUI")
+Rel(chrome_browser, background, "Запускает", "Manifest V3")
+Rel(background, chrome_browser, "Создает контекстное меню", "chrome.contextMenus API")
+Rel(user, background, "Выбирает статус из меню", "Клик")
+Rel(background, tab, "Обновляет заголовок и иконку", "chrome.tabs API")
+Rel(background, state, "Сохраняет/восстанавливает статус", "chrome.storage API")
+
+SHOW_LEGEND()
+
+@enduml

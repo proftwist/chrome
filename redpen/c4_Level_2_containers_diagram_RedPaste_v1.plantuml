@@ -1,0 +1,27 @@
+@startuml
+!include <C4/C4_Container>
+
+Title Диаграмма контейнеров - Расширение "Красная Паста"
+
+Person(user, "Пользователь", "Выделяет текст и использует контекстное меню")
+
+System_Boundary(red_paste_system, "Красная Паста") {
+    Container(background, "Service Worker", "JavaScript", "Обрабатывает контекстное меню, управляет состоянием")
+    Container(content_script, "Content Script", "JavaScript", "Внедряется в веб-страницу, применяет стили и tooltips")
+    ContainerDb(storage, "Local Storage", "chrome.storage", "Сохраняет правки и комментарии")
+}
+
+System_Ext(chrome_browser, "Браузер Chrome", "Предоставляет API расширений и рендеринг")
+System_Ext(web_page, "Веб-страница", "HTML/CSS/JS", "Страница, на которой работает расширение")
+
+Rel(user, chrome_browser, "Работает в", "GUI")
+Rel(chrome_browser, background, "Запускает", "Manifest V3")
+Rel(background, content_script, "Инжектирует на страницу", "chrome.scripting API")
+Rel(content_script, web_page, "Модифицирует DOM", "JavaScript")
+Rel(content_script, storage, "Сохраняет/загружает данные", "chrome.storage API")
+Rel(background, storage, "Читает/записывает настройки", "chrome.storage API")
+Rel(user, content_script, "Видит изменения на странице", "Визуальное отображение")
+
+SHOW_LEGEND()
+
+@enduml

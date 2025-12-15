@@ -1,0 +1,19 @@
+@startuml
+!include <C4/C4_Context>
+
+Title Контекстная диаграмма - Расширение "Красная Паста"
+
+Person(user, "Пользователь (редактор/учитель)", "Выделяет текст на веб-страницах и добавляет исправления с комментариями")
+
+System(red_paste, "Красная Паста", "Chrome расширение для пометки текста красным зачеркиванием и комментариями")
+
+System_Ext(chrome, "Браузер Chrome", "Платформа для запуска расширений, предоставляет API и рендеринг страниц")
+System_Ext(local_storage, "Local Storage браузера", "Встроенное хранилище данных расширения для сохранения правок")
+
+Rel(user, red_paste, "Использует для пометки текста", "Контекстное меню")
+Rel(red_paste, chrome, "Работает внутри", "Manifest V3, Chrome Extensions API")
+Rel(red_paste, local_storage, "Сохраняет и загружает правки", "chrome.storage API")
+
+SHOW_LEGEND()
+
+@enduml
